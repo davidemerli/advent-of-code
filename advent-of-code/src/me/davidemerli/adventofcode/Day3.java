@@ -13,7 +13,7 @@ public class Day3 {
 
     private static List<Point> wire1List = new ArrayList<>();
     private static List<Point> wire2List = new ArrayList<>();
-    private static final Point center = new Point(0, 0);
+    private static final Point CENTER = new Point(0, 0);
 
     public static void main(String[] args) throws IOException {
         firstPart();
@@ -78,8 +78,8 @@ public class Day3 {
         int min = Integer.MAX_VALUE;
 
         for (Point point : wire1List.stream().filter(wire2List::contains).collect(Collectors.toList())) {
-            if (!point.equals(center)) {
-                int mDist = manhattanDistance(point, center);
+            if (!point.equals(CENTER)) {
+                int mDist = manhattanDistance(point, CENTER);
 
                 if (mDist < min) {
                     min = mDist;
@@ -127,7 +127,7 @@ public class Day3 {
         int min = Integer.MAX_VALUE;
 
         for (Point point : wire1List.stream().filter(wire2List::contains).collect(Collectors.toList())) {
-            if (!point.equals(center)) {
+            if (!point.equals(CENTER)) {
                 int mDist = stepDistance(point, wire1List, wire2List);
                 if (mDist < min) {
                     min = mDist;
@@ -139,21 +139,7 @@ public class Day3 {
     }
 
     private static int stepDistance(Point p, List<Point> w1List, List<Point> w2List) {
-        int sum = 0;
-
-        for (Point point : w1List) {
-            if (!point.equals(p)) {
-                sum++;
-            } else break;
-        }
-
-        for (Point point : w2List) {
-            if (!point.equals(p)) {
-                sum++;
-            } else break;
-        }
-
-        return sum;
+        return w1List.indexOf(p) + w2List.indexOf(p);
     }
 
     private static int manhattanDistance(Point p1, Point p2) {
