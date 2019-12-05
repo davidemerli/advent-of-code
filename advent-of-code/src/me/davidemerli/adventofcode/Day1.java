@@ -39,7 +39,7 @@ public class Day1 {
      * Your puzzle answer was 3216868.
      */
     private static void firstPart() throws IOException {
-        List<String> inputLines = getLinesFromFile(getFileFromWorkingDir("input/day1_1.txt"));
+        List<String> inputLines = getLinesFromFile(getFileFromWorkingDir("input/day1.txt"));
 
         int result = inputLines.stream()
                 .map(Integer::parseInt)//maps the elements of the list as Integers
@@ -66,7 +66,7 @@ public class Day1 {
      * Your puzzle answer was 4822435.
      */
     private static void secondPart() throws IOException {
-        List<String> inputLines = getLinesFromFile(getFileFromWorkingDir("input/day1_2.txt"));
+        List<String> inputLines = getLinesFromFile(getFileFromWorkingDir("input/day1.txt"));
 
         int result = inputLines.stream()
                 .map(Integer::parseInt) //maps the elements of the list as Integers
