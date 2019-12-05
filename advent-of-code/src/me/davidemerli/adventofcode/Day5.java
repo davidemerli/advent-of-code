@@ -132,7 +132,7 @@ public class Day5 {
         secondPart();
     }
 
-    private static void firstPart() throws IOException {
+    private static void firstPart() {
         SYSTEM_ID = 1;
 
         new Operator(1) {
