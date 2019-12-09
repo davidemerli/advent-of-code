@@ -13,22 +13,7 @@ import static me.davidemerli.utils.SettingsReader.*;
 
 public class Day5 {
 
-    private static final List<Operator> operators = new ArrayList<>();
     private static final List<Long> PROGRAM = new ArrayList<>();
-
-    private static int SYSTEM_ID;
-
-    private abstract static class Operator {
-        final int opcode;
-
-        Operator(int opcode) {
-            this.opcode = opcode;
-
-            operators.add(this);
-        }
-
-        abstract int apply(List<Integer> program, int programCounter, int... args);
-    }
 
     public static void main(String[] args) throws IOException {
         String s = getLinesFromFile(getFileFromWorkingDir("input/day5.txt")).get(0);
