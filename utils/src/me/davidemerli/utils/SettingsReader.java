@@ -13,7 +13,7 @@ public class SettingsReader {
 
         //Ignores lines starting with '#'
         br.lines()
-                .filter(s -> !s.startsWith("#"))
+//                .filter(s -> !s.startsWith("#"))
                 .filter(s -> !s.isEmpty())
                 .forEach(list::add);
         br.close();
