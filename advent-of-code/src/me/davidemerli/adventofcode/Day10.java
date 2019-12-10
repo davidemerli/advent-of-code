@@ -2,39 +2,168 @@ package me.davidemerli.adventofcode;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static me.davidemerli.utils.SettingsReader.getFileFromWorkingDir;
 import static me.davidemerli.utils.SettingsReader.getLinesFromFile;
 
 public class Day10 {
 
-    private enum Type {
-        ASTEROID('#'), NOTHING('.');
+    private static Point center = null;
+    private static Map<Point, Double> pointsMap = new HashMap<>();
+    private static Type[][] matrix;
 
-        public char c;
+    public static void main(String[] args) throws IOException {
+        List<String> inputLines = getLinesFromFile(getFileFromWorkingDir("input/day10.txt"));
+        matrix = fillMatrix(inputLines);
+        printMatrix(matrix);
 
-        Type(char c) {
-            this.c = c;
+        firstPart();
+        secondPart();
+    }
+
+    private static void firstPart() {
+        int[][] distances = getDistances(matrix, getAsteroids(matrix));
+        System.out.println();
+        printDistances(distances);
+        System.out.println();
+        System.out.println("result1: " + getMax(distances));
+    }
+
+    private static void secondPart() {
+        getAsteroids(matrix).forEach(point -> pointsMap.put(point, getPointAngle(point, center)));
+        List<Double> angles = getOrderedAngles();
+
+        int count = 0;
+        Point last = null;
+
+        while (count < 200) {
+            for (double angle : angles) {
+                Point min = getPointWithSameAngle(pointsMap, angle).stream()
+                        .filter(point -> !point.equals(center))
+                        .min(Comparator.comparingDouble(point -> point.distance(center)))
+                        .orElse(null);
+
+                if (min != null) {
+                    pointsMap.remove(min);
+                    last = min;
+                    count++;
+
+                    if (count == 200) break;
+                }
+            }
+        }
+
+        System.out.println("result2: " + (last.x * 100 + last.y));
+    }
+
+    private static List<Double> getOrderedAngles() {
+        return pointsMap.entrySet().stream()
+                .sorted(Comparator.comparingDouble(Map.Entry::getValue))
+                .map(Map.Entry::getValue)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private static List<Point> getPointWithSameAngle(Map<Point, Double> map, double angle) {
+        return map.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(angle))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    private static int getMax(int[][] matrix) {
+        int max = 0;
+
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                int value = matrix[i][j];
+                if (value > max) {
+                    max = value;
+                    center = new Point(j, i);
+                }
+            }
+        }
+
+        return max;
+    }
+
+    private static int countReachable(Point p, List<Point> asteroids) {
+        Map<Point, Double> pointDoubleMap = new HashMap<>();
+        asteroids.stream()
+                .filter(point -> !p.equals(point))
+                .forEach(point -> pointDoubleMap.put(point, getPointAngle(point, p)));
+
+        int count = 0;
+
+        for (Point asteroid : asteroids) {
+            if (asteroid.equals(p)) continue;
+
+            double angle = pointDoubleMap.get(asteroid);
+
+            Point min = getPointWithSameAngle(pointDoubleMap, angle).stream()
+                    .min(Comparator.comparingDouble(point -> point.distance(p)))
+                    .orElse(null);
+
+            assert min != null;
+            if (min.equals(asteroid)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static List<Point> getAsteroids(Type[][] matrix) {
+        List<Point> points = new ArrayList<>();
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix.length; j++) {
+                if (matrix[i][j] == Type.ASTEROID) {
+                    points.add(new Point(j, i));
+                }
+            }
+        }
+        return points;
+    }
+
+    private static double getPointAngle(Point p, Point center) {
+        int diffX = p.x - center.x;
+        int diffY = -(p.y - center.y);
+
+        double angle = Math.toDegrees(Math.atan2(diffX, diffY));
+        return diffX >= 0 ? angle : 360 + angle;
+    }
+
+    private static int[][] getDistances(Type[][] matrix, List<Point> points) {
+        int[][] distances = new int[matrix.length][matrix[0].length];
+
+        points.forEach(point -> distances[point.y][point.x] = countReachable(point, points));
+
+        return distances;
+    }
+
+    private static void printDistances(int[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                int value = matrix[i][j];
+                System.out.print(value == 0 ? ".\t" : value + "\t");
+            }
+            System.out.println();
         }
     }
 
     private static void printMatrix(Type[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
-                System.out.print(matrix[i][j].c);
+                System.out.print(matrix[i][j].c + "\t");
             }
             System.out.println();
         }
-
     }
 
-    public static void main(String[] args) throws IOException {
-        List<String> inputLines = getLinesFromFile(getFileFromWorkingDir("input/day10.txt"));
-
+    private static Type[][] fillMatrix(List<String> inputLines) {
         Type[][] matrix = new Type[inputLines.get(0).length()][inputLines.size()];
 
         for (int i = 0; i < inputLines.size(); i++) {
@@ -51,194 +180,16 @@ public class Day10 {
             }
         }
 
-        printMatrix(matrix);
-
-        int[][] matrixValues = new int[inputLines.get(0).length()][inputLines.size()];
-
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                int sum = 0;
-                if (matrix[i][j] == Type.NOTHING) {
-//                    System.out.print(".");
-                    continue;
-                }
-
-                for (int i1 = 0; i1 < matrix.length; i1++) {
-                    for (int j1 = 0; j1 < matrix[i1].length; j1++) {
-                        if (matrix[i1][j1] == Type.NOTHING) continue;
-
-                        if (canSeeTile(matrix, new Point(i, j), new Point(i1, j1))) {
-                            sum++;
-                        }
-                    }
-                }
-//                System.out.print(sum -1);
-                matrixValues[i][j] = sum - 1;
-            }
-//            System.out.println();
-        }
-
-        int max = 0;
-        Point p = null;
-
-        for (int i = 0; i < matrixValues.length; i++) {
-            for (int j = 0; j < matrixValues[i].length; j++) {
-                int value = matrixValues[i][j];
-                if (value > max) {
-                    p = new Point(i, j);
-                    max = value;
-                }
-            }
-        }
-
-        System.out.println(p + " " + max);
-
-        fillPointDirections(matrix, p);
-
-        pointDirections.values().stream().distinct().forEach(doubles -> System.out.println(doubles[0] + " " + doubles[1]));
-
-        System.out.println(pointDirections);
-
-        Point last = null;
-//        int count = 0;
-//        while (count < 200) {
-//            for (double i = 0; i < 2 * Math.PI; i += 0.0000001) {
-//                double[] vector = {Math.cos(i), Math.sin(i)};
-//
-//                Point toLaser = getFirst(matrix, p, vector);
-//
-//                if (toLaser != null) {
-//                    count++;
-//                    matrix[toLaser.x][toLaser.y] = Type.NOTHING;
-//                    last = toLaser;
-//
-//                    System.out.println(last);
-//
-////                    printMatrix(matrix);
-//                }
-//            }
-//            count++;
-//        }
-
-        System.out.println(last);
+        return matrix;
     }
 
-    private static Map<Point, double[]> pointDirections = new HashMap<>();
+    private enum Type {
+        ASTEROID('#'), NOTHING('.');
 
-    private static void fillPointDirections(Type[][] matrix, Point center) {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                Point pos = new Point(i, j);
+        public char c;
 
-                if(pos.equals(center)) continue;
-
-                pointDirections.put(pos, normVect(pos, center));
-            }
+        Type(char c) {
+            this.c = c;
         }
     }
-
-    private static Point getFirst(Type[][] matrix, Point p1, double[] vector) {
-        Point p = null;
-
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                Point pos = new Point(i, j);
-
-                if (p1.equals(pos) | matrix[pos.x][pos.y] == Type.NOTHING) continue;
-                double[] vectorPos = normVect(p1, pos);
-
-                if (Math.abs(vector[0] - vectorPos[0]) < 0.0000001 && Math.abs(vector[1] - vectorPos[1]) < 0.0000001) {
-                    if (p == null || p1.distance(pos) < p1.distance(p)) {
-                        p = pos;
-                    }
-                }
-            }
-        }
-
-        return p;
-    }
-
-    private static boolean canSeeTile(Type[][] matrix, Point p1, Point p2) {
-
-        boolean canSee = true;
-
-        double[] vector = normVect(p1, p2);
-
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                Point pos = new Point(i, j);
-
-                if (p1.equals(pos) || p2.equals(pos) || matrix[pos.x][pos.y] == Type.NOTHING) continue;
-                double[] vectorPos = normVect(p1, pos);
-
-//                System.out.println(vectorPos);
-
-
-                if (Math.abs(vector[0] - vectorPos[0]) < 0.0000001 && Math.abs(vector[1] - vectorPos[1]) < 0.0000001) {
-                    if (p1.distance(pos) < p1.distance(p2))
-                        canSee = false;
-                }
-
-            }
-        }
-
-        return canSee;
-    }
-
-    private static double[] normVect(Point p1, Point p2) {
-        int diffX = p1.x - p2.x;
-        int diffY = p1.y - p2.y;
-        double distance = p1.distance(p2);
-
-        return new double[]{diffX / distance, diffY / distance};
-    }
-
-    public static ArrayList<Point> discretizeRay(Point p1, Point p2) {
-        ArrayList<Point> rayList = new ArrayList<>();
-        int x1 = p1.x;
-        int y1 = p1.y;
-        int x2 = p2.x;
-        int y2 = p2.y;
-        int mx = x2 - x1;
-        int my = y2 - y1;
-        int dirX = mx > 0 ? 1 : -1;
-        int dirY = my > 0 ? 1 : -1;
-        int currentX = x1;
-        int currentY = y1;
-        float nextX = x1 + 0.1f * dirX;
-        float nextY = y1 + 0.1f * dirY;
-        //Initialize the Matrix
-        rayList.add(new Point(currentX, currentY));
-        while (currentX != x2 && currentY != y2) {
-            float tx = (nextX - x1) / mx;
-            float ty = (nextY - y1) / my;
-            rayList.add(new Point(currentX, currentY));
-            if (tx < ty) {
-                currentX += dirX;
-                nextX = currentX + 0.1f * dirX;
-            } else if (tx > ty) {
-                currentY += dirY;
-                nextY = currentY + 0.1f * dirY;
-            } else {
-                currentX += dirX;
-                currentY += dirY;
-                nextX = currentX + 0.1f * dirX;
-                nextY = currentY + 0.1f * dirY;
-            }
-        }
-        rayList.add(new Point(currentX, currentY));
-        if (currentX == x2)
-            for (int i = currentY; (i <= y2 && dirY > 0) || (i >= y2 && dirY < 0); i += dirY)
-                rayList.add(new Point(currentX, i));
-        else
-            for (int i = currentX; (i <= x2 && dirX > 0) || (i >= x2 && dirX < 0); i += dirX)
-                rayList.add(new Point(i, currentY));
-
-        rayList.remove(rayList.size() - 1);
-        rayList.remove(0);
-        return rayList;
-    }
-//    public static boolean canRayReachTile(Point p1, Point p2) {
-//        return discretizeRay(p1, p2).stream().allMatch(i -> func.canCross(map, i));
-//    }
 }
