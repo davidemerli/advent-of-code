@@ -123,7 +123,7 @@ public class Day11 {
 
         for (int j = minY; j <= maxY; j++) {
             for (int i = minX; i <= maxX; i++) {
-                System.out.print(matrix[i][j] == 1 ? "█" : " ");
+                System.out.print(matrix[i][j] == 1 ? "██" : "  ");
             }
             System.out.println();
         }
