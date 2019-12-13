@@ -47,6 +47,10 @@ public class IntCodeComputer {
         }
     }
 
+    public void overrideMemory(int where, long arg) {
+        this.program.set(where, arg);
+    }
+
     public void processInput() {
         StringBuilder sb = new StringBuilder("" + program.get(programCounter));
         for (int j = 0; j < 5 - ("" + program.get(programCounter)).length(); j++) {
