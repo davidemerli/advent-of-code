@@ -22,6 +22,9 @@ public class Day15 {
         Arrays.stream(s.split(",")).map(Long::parseLong).forEach(PROGRAM::add);
 
         for (char[] chars : matrix) Arrays.fill(chars, '?');
+
+        firstPart();
+        secondPart();
     }
 
     private static void firstPart() {
@@ -75,7 +78,7 @@ public class Day15 {
         path.ifPresent(points -> System.out.println("result1: " + (points.size() - 1)));
     }
 
-    private void secondPart() {
+    private static void secondPart() {
         int count;
         for (count = 0; needsOxygen(matrix); count++) {
             fillOnce(matrix);
