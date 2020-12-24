@@ -14,7 +14,6 @@ def first():
     counter = 0
     while len(p1) != 0 and len(p2) != 0:
         counter += 1
-        print(counter)
         c1, c2 = p1.pop(0), p2.pop(0)
 
         if c1 > c2:
@@ -22,11 +21,9 @@ def first():
         else:
             p2 += [c2, c1]
 
-        print(p1, p2)
+    winner_deck = p2 if len(p1) == 0 else p1
 
-    winner = p2 if len(p1) == 0 else p1
-
-    return score(winner)
+    return score(winner_deck)
 
 
 def score(winner):
@@ -37,19 +34,20 @@ def play_game(p1, p2):
     turns = []
 
     while len(p1) != 0 and len(p2) != 0:
-        if [p1, p2] in turns:
+        if (p1, p2) in turns:
             return (0, p1)
 
-        turns.append([p1[:], p2[:]])
+        turns.append((p1[:], p2[:]))
 
         c1, c2 = p1.pop(0), p2.pop(0)
 
+        # cannot do a recursive game
         if c1 > len(p1) or c2 > len(p2):
             if c1 > c2:
                 p1 += [c1, c2]
             else:
                 p2 += [c2, c1]
-        else:
+        else:  # do the recursive game
             round_won = play_game(p1[:c1], p2[:c2])
 
             if round_won[0] == 0:
