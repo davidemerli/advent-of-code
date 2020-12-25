@@ -5,7 +5,7 @@ DAY, YEAR = 25, 2020
 
 
 def data():
-    data = aocd.get_data(day=DAY, year=YEAR).splitlines()  
+    data = aocd.get_data(day=DAY, year=YEAR).splitlines()
     data = list(map(int, data))
     return data
 
@@ -15,7 +15,7 @@ def get_loop_size(public_key):
     subj = 7
 
     value = 1
-    
+
     while True:
         value *= subj
         value %= 20201227
@@ -25,13 +25,13 @@ def get_loop_size(public_key):
         if value == public_key:
             return counter
 
+
 def transform(subj, loop_size):
     value = 1
     for _ in range(loop_size):
         value *= subj
         value %= 20201227
     return value
-
 
 
 def first():
@@ -46,5 +46,6 @@ def first():
     assert en1 == en2
 
     return en1
+
 
 aocd.submit(first(), part='a', day=DAY, year=YEAR)
