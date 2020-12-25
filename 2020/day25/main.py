@@ -11,19 +11,16 @@ def data():
 
 
 def get_loop_size(public_key):
+    subj, value = 7, 1
     counter = 0
-    subj = 7
 
-    value = 1
-
-    while True:
+    while value != public_key:
         value *= subj
         value %= 20201227
 
         counter += 1
 
-        if value == public_key:
-            return counter
+    return counter
 
 
 def transform(subj, loop_size):
