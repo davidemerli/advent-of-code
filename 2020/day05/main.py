@@ -19,5 +19,5 @@ def second():
     return set(i for i in range(min(ids), max(ids) + 1)).difference(set(ids)).pop()
 
 
-aocd.submit(first()[0], part='a', day=DAY, year=YEAR)
+aocd.submit(first(), part='a', day=DAY, year=YEAR)
 aocd.submit(second(), part='b', day=DAY, year=YEAR)
